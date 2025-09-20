@@ -1,0 +1,255 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Thư Tỏ Tình</title>
+  <style>
+    :root{
+      --bg:#0f1724;
+      --card:#0b1220;
+      --accent:#ff6b81;
+      --accent-2:#ffd166;
+      --text:#e6eef8;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%;margin:0;font-family:Inter, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial; background: radial-gradient( circle at 10% 10%, rgba(255,107,129,0.06), transparent 10%), radial-gradient( circle at 90% 90%, rgba(255,209,102,0.03), transparent 10%), var(--bg); color:var(--text)}
+
+    .wrap{min-height:100%;display:flex;align-items:center;justify-content:center;padding:28px}
+    .card{width:100%;max-width:760px;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(0,0,0,0.06));border:1px solid rgba(255,255,255,0.04);padding:28px;border-radius:16px;box-shadow:0 8px 30px rgba(2,6,23,0.6);position:relative;overflow:hidden}
+
+    header{display:flex;align-items:center;gap:16px}
+    .logo{width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent-2));display:flex;align-items:center;justify-content:center;font-weight:700;color:#111;transform:rotate(-12deg);box-shadow:0 6px 18px rgba(255,107,129,0.12)}
+    h1{font-size:20px;margin:0}
+    p.lead{margin:6px 0 0;color:rgba(230,238,248,0.8)}
+
+    .scene{display:grid;grid-template-columns:1fr 320px;gap:18px;margin-top:18px}
+    @media (max-width:840px){.scene{grid-template-columns:1fr;}.aside{order:2}}
+
+    .letter{background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(0,0,0,0.04));padding:22px;border-radius:12px;min-height:260px;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center}
+    .letter .heart{font-size:54px;margin-bottom:12px;transform:scale(1);transition:transform .3s}
+    .letter h2{margin:6px 0 6px}
+    .letter p{margin:0 0 14px;color:rgba(230,238,248,0.85)}
+
+    .cta{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
+    .btn{padding:10px 16px;border-radius:10px;border:0;cursor:pointer;font-weight:600}
+    .btn-primary{background:linear-gradient(90deg,var(--accent),#ff8aa0);color:#111}
+    .btn-ghost{background:transparent;border:1px solid rgba(255,255,255,0.06);color:var(--text)}
+
+    .aside{padding:18px;border-radius:12px;background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(0,0,0,0.03));display:flex;flex-direction:column;gap:14px}
+    .q{padding:12px;border-radius:10px;background:rgba(255,255,255,0.02);text-align:center}
+    .answer{display:flex;gap:8px;justify-content:center}
+
+    /* modal */
+    .modal{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(2,6,23,0.5);opacity:0;pointer-events:none;transition:opacity .25s}
+    .modal.open{opacity:1;pointer-events:auto}
+    .modal-card{background:var(--card);padding:22px;border-radius:12px;max-width:520px;width:100%;box-shadow:0 18px 50px rgba(2,6,23,0.6);text-align:center}
+    .modal-card h3{margin:0 0 8px}
+
+    .confetti-canvas{position:absolute;left:0;top:0;width:100%;height:100%;pointer-events:none}
+
+    footer{margin-top:16px;text-align:center;color:rgba(230,238,248,0.6);font-size:13px}
+
+    /* small touches */
+    .sparkle{position:absolute;right:-60px;top:-60px;width:180px;height:180px;border-radius:50%;background:radial-gradient(circle at 30% 30%, rgba(255,255,255,0.06), transparent 12%);filter:blur(8px)}
+
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card" role="main">
+      <canvas class="confetti-canvas" id="confetti"></canvas>
+      <div class="sparkle"></div>
+      <header>
+        <div class="logo">♥</div>
+        <div>
+          <h1>Thư Tỏ Tình</h1>
+          <p class="lead">Một trang nhỏ để nói lời thật lòng — gửi đến người bạn thương.</p>
+        </div>
+      </header>
+
+      <div class="scene">
+        <div class="letter" id="letter">
+          <div class="heart" id="heart">💌</div>
+          <h2 id="title">Gửi em — người làm anh cười nhiều nhất</h2>
+          <p id="preview">Anh muốn nói với em rất nhiều điều, nhưng tóm gọn lại: anh thích em. Nếu em đồng ý, bấm nút 'Đồng ý' nhé 💖</p>
+          <div class="cta">
+            <button class="btn btn-primary" id="openBtn">Mở Thư</button>
+            <button class="btn btn-ghost" id="surpriseBtn">Gửi Quà Ảo</button>
+          </div>
+        </div>
+
+        <aside class="aside">
+          <div class="q">
+            <strong>Em có thích anh không?</strong>
+            <div class="answer" style="margin-top:10px">
+              <button class="btn btn-primary" id="yesBtn">Có (Đồng ý)</button>
+              <button class="btn btn-ghost" id="noBtn">Không (Từ chối)</button>
+            </div>
+          </div>
+
+          <div class="q" id="secretBox">
+            <strong>Ghi lời nhắn của anh</strong>
+            <textarea id="note" rows="3" style="width:100%;margin-top:8px;padding:8px;border-radius:8px;background:transparent;border:1px solid rgba(255,255,255,0.04);color:var(--text)"></textarea>
+            <button class="btn btn-primary" id="sendNote" style="margin-top:8px;display:block;margin-left:auto">Gửi</button>
+          </div>
+
+          <div style="text-align:center;color:rgba(230,238,248,0.7)">Bạn có thể tuỳ chỉnh lời nhắn và gửi thử nhé.</div>
+        </aside>
+      </div>
+
+      <footer>Nhấn "Mở Thư" để xem nội dung tỏ tình đầy đủ. Đừng lo — mọi thứ an toàn và chỉ có giữa bạn và trang này.</footer>
+    </div>
+  </div>
+
+  <!-- modal -->
+  <div class="modal" id="modal">
+    <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+      <h3 id="modalTitle">Anh muốn nói với em...</h3>
+      <p id="modalText">...</p>
+      <div style="margin-top:16px;display:flex;gap:8px;justify-content:center">
+        <button class="btn btn-primary" id="accept">Đồng ý 💖</button>
+        <button class="btn btn-ghost" id="decline">Hẹn nhé</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // DOM
+    const openBtn = document.getElementById('openBtn');
+    const modal = document.getElementById('modal');
+    const modalText = document.getElementById('modalText');
+    const accept = document.getElementById('accept');
+    const decline = document.getElementById('decline');
+    const heart = document.getElementById('heart');
+    const confettiCanvas = document.getElementById('confetti');
+    const yesBtn = document.getElementById('yesBtn');
+    const noBtn = document.getElementById('noBtn');
+    const surpriseBtn = document.getElementById('surpriseBtn');
+    const noteInput = document.getElementById('note');
+    const sendNote = document.getElementById('sendNote');
+
+    // Pre-written letter (you can edit)
+    const fullLetter = `Em à,
+
+    Anh đã suy nghĩ rất nhiều trước khi viết những dòng này. Mỗi khi nghĩ về em, tim anh lại nhẹ và nở một nụ cười. Em là người khiến những ngày thường của anh trở nên đáng yêu hơn, là người anh muốn chia sẻ mọi điều — từ những thứ bé nhỏ đến những ước mơ lớn.
+
+    Anh thích em — thích cách em cười, cách em nói, và cả những lúc em lầm lỡ. Nếu em cho phép, anh muốn được ở bên cạnh em, cùng em bước qua những ngày vui buồn.
+
+    Dù câu trả lời của em là gì, anh vẫn trân trọng em — và cảm ơn em đã đọc tới đây.
+
+    Yêu em,
+    (Người gửi)`.trim();
+
+    // helper: open modal
+    function openModal(text){
+      modalText.textContent = text;
+      modal.classList.add('open');
+    }
+    function closeModal(){
+      modal.classList.remove('open');
+    }
+
+    openBtn.addEventListener('click', ()=>{
+      openModal(fullLetter);
+      pulseHeart();
+    });
+
+    decline.addEventListener('click', ()=>{
+      closeModal();
+      shake(heart);
+      showToast('Không sao cả — cảm ơn em đã nghe anh nói.');
+    });
+
+    accept.addEventListener('click', ()=>{
+      closeModal();
+      launchConfetti();
+      showToast('Anh vui lắm! Cảm ơn em 💖');
+    });
+
+    yesBtn.addEventListener('click', ()=>{
+      openModal('Em chọn: Có ❤️\n\nAnh rất vui khi nghe điều đó — mình đi uống nước nhé? :)');
+    });
+    noBtn.addEventListener('click', ()=>{
+      openModal('Em chọn: Không 💬\n\nAnh hiểu. Cảm ơn em đã thành thật. Anh vẫn cầu chúc những điều tốt đẹp đến em.');
+    });
+
+    surpriseBtn.addEventListener('click', ()=>{
+      launchConfetti(150);
+      showToast('Quà ảo đã gửi — hi vọng em mỉm cười :)');
+    });
+
+    sendNote.addEventListener('click', ()=>{
+      const v = noteInput.value.trim();
+      if(!v){ showToast('Hãy viết điều gì đó trước khi gửi.'); return; }
+      openModal('Lời nhắn đã gửi:\n\n"' + v + '"\n\nAnh đã lưu lời nhắn này trong tim (và trong trình duyệt của bạn).');
+      // save to localStorage as a tiny demo
+      try{ localStorage.setItem('love_note', v); }catch(e){}
+    });
+
+    // small UI effects
+    function pulseHeart(){
+      heart.style.transform = 'scale(1.2)';
+      setTimeout(()=>heart.style.transform='scale(1)',400);
+    }
+    function shake(el){
+      el.animate([{transform:'translateX(-6px)'},{transform:'translateX(6px)'} ,{transform:'translateX(0)'}], {duration:500,iterations:1});
+    }
+
+    // toast
+    function showToast(t){
+      const x = document.createElement('div');
+      x.textContent = t; x.style.position='fixed';x.style.right='18px';x.style.bottom='18px';x.style.padding='10px 12px';x.style.borderRadius='10px';x.style.background='linear-gradient(90deg, rgba(255,107,129,0.12), rgba(255,209,102,0.08))';x.style.backdropFilter='blur(6px)';x.style.color='var(--text)';x.style.zIndex=9999;document.body.appendChild(x);
+      setTimeout(()=>{x.style.opacity='0';x.style.transform='translateY(8px)';},2500);
+      setTimeout(()=>x.remove(),3200);
+    }
+
+    // Confetti (simple)
+    function launchConfetti(count=80){
+      const ctx = confettiCanvas.getContext('2d');
+      const w = confettiCanvas.width = confettiCanvas.offsetWidth;
+      const h = confettiCanvas.height = confettiCanvas.offsetHeight;
+      const pieces = [];
+      for(let i=0;i<count;i++){
+        pieces.push({x:Math.random()*w,y:Math.random()*-h,vy:2+Math.random()*4,ax:0.01*(Math.random()-0.5),size:6+Math.random()*8,rot:Math.random()*360,vr:Math.random()*6-3,color:randomColor()});
+      }
+      let frame=0;
+      function render(){
+        ctx.clearRect(0,0,w,h);
+        for(const p of pieces){
+          p.x += p.ax*frame;
+          p.y += p.vy;
+          p.rot += p.vr;
+          ctx.save();
+          ctx.translate(p.x,p.y);
+          ctx.rotate(p.rot*Math.PI/180);
+          ctx.fillStyle = p.color;
+          ctx.fillRect(-p.size/2,-p.size/2,p.size,p.size*0.6);
+          ctx.restore();
+          if(p.y>h+20){ p.y = -10; p.x = Math.random()*w; }
+        }
+        frame++;
+        if(frame<500) requestAnimationFrame(render);
+        else ctx.clearRect(0,0,w,h);
+      }
+      render();
+    }
+    function randomColor(){
+      const cs = ['#ff6b81','#ffd166','#9bf6ff','#c4f0c9','#ff9f80']; return cs[Math.floor(Math.random()*cs.length)];
+    }
+
+    // resize confetti
+    window.addEventListener('resize', ()=>{
+      confettiCanvas.width = confettiCanvas.offsetWidth;
+      confettiCanvas.height = confettiCanvas.offsetHeight;
+    });
+
+    // keyboard: Esc to close modal
+    window.addEventListener('keydown', (e)=>{ if(e.key==='Escape') closeModal(); });
+
+    // load saved note
+    try{ const saved = localStorage.getItem('love_note'); if(saved) noteInput.value = saved; }catch(e){}
+
+  </script>
+</body>
+</html>
