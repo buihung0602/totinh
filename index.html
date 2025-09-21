@@ -3,253 +3,289 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Thư Tỏ Tình</title>
+  <title>MANGA ADMIN DEMO — Trình đọc truyện phân quyền</title>
   <style>
-    :root{
-      --bg:#0f1724;
-      --card:#0b1220;
-      --accent:#ff6b81;
-      --accent-2:#ffd166;
-      --text:#e6eef8;
-    }
+    :root{--bg:#f4f7fb;--card:#fff;--muted:#6b7280;--accent:#1e90ff}
+    [data-theme='dark']{--bg:#0b0e14;--card:#0f1720;--muted:#9aa4b2;--accent:#6ea8ff;color:#e6eef9}
     *{box-sizing:border-box}
-    html,body{height:100%;margin:0;font-family:Inter, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial; background: radial-gradient( circle at 10% 10%, rgba(255,107,129,0.06), transparent 10%), radial-gradient( circle at 90% 90%, rgba(255,209,102,0.03), transparent 10%), var(--bg); color:var(--text)}
+    body{margin:0;font-family:Inter,system-ui,Segoe UI,Roboto,Arial;background:var(--bg);color:inherit}
+    header{background:var(--card);padding:12px 16px;display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:30}
+    header h1{margin:0;font-size:18px}
+    header .right{margin-left:auto;display:flex;gap:8px;align-items:center}
+    .container{max-width:1200px;margin:16px auto;padding:12px}
+    .grid{display:grid;grid-template-columns:300px 1fr;gap:16px}
+    .card{background:var(--card);padding:12px;border-radius:10px;box-shadow:0 1px 4px rgba(0,0,0,.04)}
+    .comic-item{display:flex;gap:10px;padding:8px;border-radius:8px;cursor:pointer;align-items:center}
+    .comic-item img{width:56px;height:80px;object-fit:cover;border-radius:6px}
+    .meta small{color:var(--muted)}
+    .toolbar{display:flex;gap:8px;align-items:center;margin-bottom:12px}
 
-    .wrap{min-height:100%;display:flex;align-items:center;justify-content:center;padding:28px}
-    .card{width:100%;max-width:760px;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(0,0,0,0.06));border:1px solid rgba(255,255,255,0.04);padding:28px;border-radius:16px;box-shadow:0 8px 30px rgba(2,6,23,0.6);position:relative;overflow:hidden}
-
-    header{display:flex;align-items:center;gap:16px}
-    .logo{width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent-2));display:flex;align-items:center;justify-content:center;font-weight:700;color:#111;transform:rotate(-12deg);box-shadow:0 6px 18px rgba(255,107,129,0.12)}
-    h1{font-size:20px;margin:0}
-    p.lead{margin:6px 0 0;color:rgba(230,238,248,0.8)}
-
-    .scene{display:grid;grid-template-columns:1fr 320px;gap:18px;margin-top:18px}
-    @media (max-width:840px){.scene{grid-template-columns:1fr;}.aside{order:2}}
-
-    .letter{background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(0,0,0,0.04));padding:22px;border-radius:12px;min-height:260px;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center}
-    .letter .heart{font-size:54px;margin-bottom:12px;transform:scale(1);transition:transform .3s}
-    .letter h2{margin:6px 0 6px}
-    .letter p{margin:0 0 14px;color:rgba(230,238,248,0.85)}
-
-    .cta{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
-    .btn{padding:10px 16px;border-radius:10px;border:0;cursor:pointer;font-weight:600}
-    .btn-primary{background:linear-gradient(90deg,var(--accent),#ff8aa0);color:#111}
-    .btn-ghost{background:transparent;border:1px solid rgba(255,255,255,0.06);color:var(--text)}
-
-    .aside{padding:18px;border-radius:12px;background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(0,0,0,0.03));display:flex;flex-direction:column;gap:14px}
-    .q{padding:12px;border-radius:10px;background:rgba(255,255,255,0.02);text-align:center}
-    .answer{display:flex;gap:8px;justify-content:center}
-
-    /* modal */
-    .modal{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(2,6,23,0.5);opacity:0;pointer-events:none;transition:opacity .25s}
-    .modal.open{opacity:1;pointer-events:auto}
-    .modal-card{background:var(--card);padding:22px;border-radius:12px;max-width:520px;width:100%;box-shadow:0 18px 50px rgba(2,6,23,0.6);text-align:center}
-    .modal-card h3{margin:0 0 8px}
-
-    .confetti-canvas{position:absolute;left:0;top:0;width:100%;height:100%;pointer-events:none}
-
-    footer{margin-top:16px;text-align:center;color:rgba(230,238,248,0.6);font-size:13px}
-
-    /* small touches */
-    .sparkle{position:absolute;right:-60px;top:-60px;width:180px;height:180px;border-radius:50%;background:radial-gradient(circle at 30% 30%, rgba(255,255,255,0.06), transparent 12%);filter:blur(8px)}
-
+    .reader .page img{width:100%;height:auto;border-radius:8px}
+    .chapter-list{display:flex;flex-wrap:wrap;gap:8px}
+    .btn{padding:8px 10px;border-radius:8px;border:1px solid #ddd;background:transparent;cursor:pointer}
+    .btn-primary{background:var(--accent);color:white;border:none}
+    .danger{background:#ffd6d6;border-color:#ff9e9e}
+    .form-row{display:flex;gap:8px;align-items:center}
+    input[type='text'],textarea,select{padding:8px;border-radius:8px;border:1px solid #ddd;width:100%}
+    label{font-size:13px;color:var(--muted)}
+    .small{font-size:13px;color:var(--muted)}
+    footer{padding:12px;text-align:center;color:var(--muted);font-size:13px}
+    @media(max-width:880px){.grid{grid-template-columns:1fr} .comic-item img{width:48px;height:68px}}
+    .hidden{display:none}
+    .audit{font-size:13px}
+    .pill{display:inline-block;padding:4px 8px;border-radius:999px;background:#eef;font-size:12px}
   </style>
 </head>
 <body>
-  <div class="wrap">
-    <div class="card" role="main">
-      <canvas class="confetti-canvas" id="confetti"></canvas>
-      <div class="sparkle"></div>
-      <header>
-        <div class="logo">♥</div>
+  <header>
+    <h1>MANGA — DEMO (Admin/User)</h1>
+    <div class="right">
+      <div id="who" class="small">Chưa đăng nhập</div>
+      <button id="toggleTheme" class="btn" title="Toggle theme">🌙</button>
+      <button id="loginBtn" class="btn btn-primary">Đăng nhập</button>
+      <button id="logoutBtn" class="btn hidden">Đăng xuất</button>
+    </div>
+  </header>
+
+  <div class="container">
+    <div class="grid">
+      <aside class="card">
+        <div class="toolbar">
+          <input id="search" placeholder="Tìm truyện..." />
+          <button id="newComicBtn" class="btn btn-primary hidden">➕ Thêm</button>
+        </div>
+        <div id="comicList"></div>
+        <hr>
         <div>
-          <h1>Thư Tỏ Tình</h1>
-          <p class="lead">Một trang nhỏ để nói lời thật lòng — gửi đến người bạn thương.</p>
+          <h4>Bookmark</h4>
+          <div id="bookmarks" class="small"></div>
         </div>
-      </header>
+      </aside>
 
-      <div class="scene">
-        <div class="letter" id="letter">
-          <div class="heart" id="heart">💌</div>
-          <h2 id="title">Gửi em — người làm anh cười nhiều nhất</h2>
-          <p id="preview">Anh muốn nói với em rất nhiều điều, nhưng tóm gọn lại: anh thích em. Nếu em đồng ý, bấm nút 'Đồng ý' nhé 💖</p>
-          <div class="cta">
-            <button class="btn btn-primary" id="openBtn">Mở Thư</button>
-            <button class="btn btn-ghost" id="surpriseBtn">Gửi Quà Ảo</button>
+      <main>
+        <section id="readerSection" class="card reader">
+          <div class="toolbar">
+            <select id="chapterSelect"></select>
+            <button id="prevChap" class="btn">⬅</button>
+            <button id="nextChap" class="btn">➡</button>
+            <button id="toggleContinuous" class="btn">Toggle Continuous</button>
+            <button id="bookmarkBtn" class="btn">🔖 Lưu bookmark</button>
+            <div style="margin-left:auto"><span id="roleBadge" class="pill">GUEST</span></div>
           </div>
-        </div>
 
-        <aside class="aside">
-          <div class="q">
-            <strong>Em có thích anh không?</strong>
-            <div class="answer" style="margin-top:10px">
-              <button class="btn btn-primary" id="yesBtn">Có (Đồng ý)</button>
-              <button class="btn btn-ghost" id="noBtn">Không (Từ chối)</button>
+          <div id="viewer" tabindex="0"></div>
+        </section>
+
+        <section id="adminPanel" class="card hidden" style="margin-top:12px">
+          <h3>Admin Panel</h3>
+          <div style="display:flex;gap:12px">
+            <div style="flex:1">
+              <h4>Chi tiết truyện</h4>
+              <div class="form-row"><input id="comicTitle" placeholder="Tiêu đề" /></div>
+              <div class="form-row" style="margin-top:8px"><input id="comicAuthor" placeholder="Tác giả" /></div>
+              <div class="form-row" style="margin-top:8px"><input id="comicThumb" placeholder="URL thumbnail" /></div>
+              <div style="margin-top:8px;display:flex;gap:6px"><button id="saveComic" class="btn btn-primary">Lưu</button><button id="deleteComic" class="btn danger">Xóa</button></div>
+            </div>
+            <div style="width:380px">
+              <h4>Chapters</h4>
+              <div id="chapterEditor">
+                <div class="form-row"><input id="chapTitle" placeholder="Tiêu đề chap" /></div>
+                <div class="form-row" style="margin-top:8px"><input id="imgUrlInput" placeholder="URL ảnh (hoặc chọn file)" /></div>
+                <div style="margin-top:8px;display:flex;gap:6px"><input id="imgFile" type="file" accept="image/*" /><button id="addImgBtn" class="btn">Thêm ảnh</button></div>
+                <div style="margin-top:8px;display:flex;gap:6px"><button id="createChapBtn" class="btn btn-primary">Tạo chap mới</button><button id="deleteChapBtn" class="btn danger">Xóa chap</button></div>
+                <div style="margin-top:12px"><strong>Ảnh trong chap hiện tại</strong><div id="imgList"></div></div>
+              </div>
             </div>
           </div>
 
-          <div class="q" id="secretBox">
-            <strong>Ghi lời nhắn của anh</strong>
-            <textarea id="note" rows="3" style="width:100%;margin-top:8px;padding:8px;border-radius:8px;background:transparent;border:1px solid rgba(255,255,255,0.04);color:var(--text)"></textarea>
-            <button class="btn btn-primary" id="sendNote" style="margin-top:8px;display:block;margin-left:auto">Gửi</button>
+          <hr>
+          <div>
+            <h4>Audit logs</h4>
+            <div id="auditLogs" class="audit" style="max-height:180px;overflow:auto"></div>
           </div>
-
-          <div style="text-align:center;color:rgba(230,238,248,0.7)">Bạn có thể tuỳ chỉnh lời nhắn và gửi thử nhé.</div>
-        </aside>
-      </div>
-
-      <footer>Nhấn "Mở Thư" để xem nội dung tỏ tình đầy đủ. Đừng lo — mọi thứ an toàn và chỉ có giữa bạn và trang này.</footer>
+        </section>
+      </main>
     </div>
   </div>
 
-  <!-- modal -->
-  <div class="modal" id="modal">
-    <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
-      <h3 id="modalTitle">Anh muốn nói với em...</h3>
-      <p id="modalText">...</p>
-      <div style="margin-top:16px;display:flex;gap:8px;justify-content:center">
-        <button class="btn btn-primary" id="accept">Đồng ý 💖</button>
-        <button class="btn btn-ghost" id="decline">Hẹn nhé</button>
-      </div>
+  <footer>Demo local — toàn bộ dữ liệu lưu trong <code>localStorage</code>. Để production cần backend + database.</footer>
+
+  <template id="comicTpl">
+    <div class="comic-item">
+      <img src="" alt="thumb" />
+      <div class="meta"><b class="title"></b><div class="small author"></div></div>
     </div>
-  </div>
+  </template>
 
   <script>
-    // DOM
-    const openBtn = document.getElementById('openBtn');
-    const modal = document.getElementById('modal');
-    const modalText = document.getElementById('modalText');
-    const accept = document.getElementById('accept');
-    const decline = document.getElementById('decline');
-    const heart = document.getElementById('heart');
-    const confettiCanvas = document.getElementById('confetti');
-    const yesBtn = document.getElementById('yesBtn');
-    const noBtn = document.getElementById('noBtn');
-    const surpriseBtn = document.getElementById('surpriseBtn');
-    const noteInput = document.getElementById('note');
-    const sendNote = document.getElementById('sendNote');
+  // -------------------- STORAGE KEYS --------------------
+  const STORE_KEY = 'manga-app-store-v1';
+  const USER_KEY = 'manga-app-users-v1';
+  const AUDIT_KEY = 'manga-app-audit-v1';
 
-    // Pre-written letter (you can edit)
-    const fullLetter = `Em à,
+  // -------------------- SAMPLE USERS --------------------
+  // For demo only. Passwords are plain text here. In production use server + hashing.
+  const DEFAULT_USERS = [
+    {id:1, name:'admin', password:'123', role:'admin'},
+    {id:2, name:'user', password:'123', role:'user'}
+  ];
 
-    Anh đã suy nghĩ rất nhiều trước khi viết những dòng này. Mỗi khi nghĩ về em, tim anh lại nhẹ và nở một nụ cười. Em là người khiến những ngày thường của anh trở nên đáng yêu hơn, là người anh muốn chia sẻ mọi điều — từ những thứ bé nhỏ đến những ước mơ lớn.
+  // -------------------- DEFAULT DATA --------------------
+  const SAMPLE_COMICS = [
+    {
+      id:'demo-1', title:'Demo Truyện 1', author:'Tác giả A', thumb:'https://placehold.co/200x300?text=Demo1',
+      chapters:[{id:'d1-c1', title:'Chap 1', images:['https://placehold.co/1000x1400?text=1-1','https://placehold.co/1000x1400?text=1-2']},
+                {id:'d1-c2', title:'Chap 2', images:['https://placehold.co/1000x1400?text=2-1']}]
+    },
+    {id:'demo-2', title:'Demo Truyện 2', author:'Tác giả B', thumb:'https://placehold.co/200x300?text=Demo2', chapters:[]}
+  ];
 
-    Anh thích em — thích cách em cười, cách em nói, và cả những lúc em lầm lỡ. Nếu em cho phép, anh muốn được ở bên cạnh em, cùng em bước qua những ngày vui buồn.
+  // -------------------- STATE --------------------
+  let state = { users:[], comics:[], currentUser:null, currentComicId:null, currentChapIndex:0, continuous:true };
 
-    Dù câu trả lời của em là gì, anh vẫn trân trọng em — và cảm ơn em đã đọc tới đây.
+  // -------------------- UTIL --------------------
+  function uid(prefix='id'){return prefix + '-' + Math.random().toString(36).slice(2,9)}
+  function now(){return new Date().toISOString()}
+  function saveState(){ localStorage.setItem(STORE_KEY, JSON.stringify(state)); }
+  function loadState(){
+    const raw = localStorage.getItem(STORE_KEY);
+    const uraw = localStorage.getItem(USER_KEY);
+    if(uraw){ state.users = JSON.parse(uraw); }
+    else{ state.users = DEFAULT_USERS; localStorage.setItem(USER_KEY, JSON.stringify(DEFAULT_USERS)); }
+    if(raw){ try{ const s = JSON.parse(raw); Object.assign(state,s); }catch(e){ console.error(e); } }
+    if(!state.comics || state.comics.length===0){ state.comics = SAMPLE_COMICS; saveState(); }
+  }
 
-    Yêu em,
-    (Người gửi)`.trim();
+  function pushAudit(action, details){
+    const logs = JSON.parse(localStorage.getItem(AUDIT_KEY) || '[]');
+    logs.unshift({id:uid('log'), action, details, by: state.currentUser ? state.currentUser.name : 'guest', at: now()});
+    localStorage.setItem(AUDIT_KEY, JSON.stringify(logs.slice(0,200)));
+    renderAudit();
+  }
 
-    // helper: open modal
-    function openModal(text){
-      modalText.textContent = text;
-      modal.classList.add('open');
-    }
-    function closeModal(){
-      modal.classList.remove('open');
-    }
+  // -------------------- AUTH --------------------
+  function loginPrompt(){
+    const name = prompt('Tài khoản (admin/user):');
+    if(!name) return;
+    const pwd = prompt('Mật khẩu:');
+    const user = state.users.find(u=>u.name===name && u.password===pwd);
+    if(!user) return alert('Đăng nhập thất bại');
+    state.currentUser = {id:user.id,name:user.name,role:user.role}; saveState(); renderAuth(); pushAudit('login', {user:user.name});
+  }
+  function logout(){ pushAudit('logout',{}); state.currentUser = null; saveState(); renderAuth(); }
 
-    openBtn.addEventListener('click', ()=>{
-      openModal(fullLetter);
-      pulseHeart();
+  // -------------------- RENDER UI --------------------
+  const comicListEl = document.getElementById('comicList');
+  const comicTpl = document.getElementById('comicTpl');
+  const whoEl = document.getElementById('who');
+  const loginBtn = document.getElementById('loginBtn');
+  const logoutBtn = document.getElementById('logoutBtn');
+  const newComicBtn = document.getElementById('newComicBtn');
+  const adminPanel = document.getElementById('adminPanel');
+  const viewer = document.getElementById('viewer');
+  const chapterSelect = document.getElementById('chapterSelect');
+  const roleBadge = document.getElementById('roleBadge');
+
+  function renderComics(filter=''){
+    comicListEl.innerHTML='';
+    state.comics.filter(c=> (c.title + ' ' + c.author).toLowerCase().includes(filter.toLowerCase())).forEach(c=>{
+      const frag = comicTpl.content.cloneNode(true);
+      frag.querySelector('img').src = c.thumb || 'https://placehold.co/120x180';
+      frag.querySelector('.title').textContent = c.title;
+      frag.querySelector('.author').textContent = c.author || '';
+      const node = frag.firstElementChild;
+      node.addEventListener('click', ()=> selectComic(c.id));
+      comicListEl.appendChild(node);
     });
+  }
 
-    decline.addEventListener('click', ()=>{
-      closeModal();
-      shake(heart);
-      showToast('Không sao cả — cảm ơn em đã nghe anh nói.');
-    });
+  function renderAuth(){
+    if(state.currentUser){ whoEl.textContent = `Đăng nhập với ${state.currentUser.name}`; loginBtn.classList.add('hidden'); logoutBtn.classList.remove('hidden'); roleBadge.textContent = state.currentUser.role.toUpperCase(); }
+    else{ whoEl.textContent='Chưa đăng nhập'; loginBtn.classList.remove('hidden'); logoutBtn.classList.add('hidden'); roleBadge.textContent='GUEST'; }
+    // show admin UI
+    if(state.currentUser && state.currentUser.role === 'admin'){
+      adminPanel.classList.remove('hidden'); newComicBtn.classList.remove('hidden'); document.getElementById('saveComic').classList.remove('hidden');
+    }else{ adminPanel.classList.add('hidden'); newComicBtn.classList.add('hidden'); }
+    renderBookmarks(); renderComics(document.getElementById('search').value || '');
+  }
 
-    accept.addEventListener('click', ()=>{
-      closeModal();
-      launchConfetti();
-      showToast('Anh vui lắm! Cảm ơn em 💖');
-    });
+  function selectComic(id){ state.currentComicId = id; state.currentChapIndex = 0; saveState(); renderSelected(); }
+  function renderSelected(){
+    const c = state.comics.find(x=>x.id===state.currentComicId);
+    if(!c){ viewer.innerHTML = '<div class="small">Chưa chọn truyện</div>'; chapterSelect.innerHTML=''; return; }
+    // chapters
+    chapterSelect.innerHTML=''; c.chapters.forEach((ch,i)=>{ const opt = document.createElement('option'); opt.value=i; opt.textContent = ch.title; chapterSelect.appendChild(opt); });
+    chapterSelect.value = state.currentChapIndex;
+    showChapter(state.currentChapIndex);
+    // fill admin form
+    document.getElementById('comicTitle').value = c.title || '';
+    document.getElementById('comicAuthor').value = c.author || '';
+    document.getElementById('comicThumb').value = c.thumb || '';
+    renderImgList();
+  }
 
-    yesBtn.addEventListener('click', ()=>{
-      openModal('Em chọn: Có ❤️\n\nAnh rất vui khi nghe điều đó — mình đi uống nước nhé? :)');
-    });
-    noBtn.addEventListener('click', ()=>{
-      openModal('Em chọn: Không 💬\n\nAnh hiểu. Cảm ơn em đã thành thật. Anh vẫn cầu chúc những điều tốt đẹp đến em.');
-    });
+  function showChapter(idx){ const c = state.comics.find(x=>x.id===state.currentComicId); if(!c) return; const chap = c.chapters[idx]; if(!chap) return; viewer.innerHTML=''; if(state.continuous){ chap.images.forEach(src=>{ const d = document.createElement('div'); d.className='page'; const img = document.createElement('img'); img.src = src; img.loading='lazy'; d.appendChild(img); viewer.appendChild(d); }); } else { const src = chap.images[0] || ''; viewer.innerHTML = src ? `<div class="page"><img src="${src}" loading="lazy" /></div>` : '<div class="small">Không có ảnh</div>'; } }
 
-    surpriseBtn.addEventListener('click', ()=>{
-      launchConfetti(150);
-      showToast('Quà ảo đã gửi — hi vọng em mỉm cười :)');
-    });
+  // -------------------- CRUD ADMIN --------------------
+  function createNewComic(){
+    const id = uid('comic'); const title = prompt('Tiêu đề truyện:') || 'Untitled';
+    const newC = {id, title, author:'', thumb:'https://placehold.co/200x300?text=new', chapters:[]};
+    state.comics.unshift(newC); saveState(); pushAudit('create:comic',{comic:newC}); renderComics(); selectComic(id);
+  }
 
-    sendNote.addEventListener('click', ()=>{
-      const v = noteInput.value.trim();
-      if(!v){ showToast('Hãy viết điều gì đó trước khi gửi.'); return; }
-      openModal('Lời nhắn đã gửi:\n\n"' + v + '"\n\nAnh đã lưu lời nhắn này trong tim (và trong trình duyệt của bạn).');
-      // save to localStorage as a tiny demo
-      try{ localStorage.setItem('love_note', v); }catch(e){}
-    });
+  function saveComic(){ const c = state.comics.find(x=>x.id===state.currentComicId); if(!c) return alert('Chưa chọn truyện'); const before=JSON.parse(JSON.stringify(c)); c.title = document.getElementById('comicTitle').value; c.author = document.getElementById('comicAuthor').value; c.thumb = document.getElementById('comicThumb').value; saveState(); pushAudit('update:comic',{before,after:c}); renderComics(); alert('Lưu thành công'); }
 
-    // small UI effects
-    function pulseHeart(){
-      heart.style.transform = 'scale(1.2)';
-      setTimeout(()=>heart.style.transform='scale(1)',400);
-    }
-    function shake(el){
-      el.animate([{transform:'translateX(-6px)'},{transform:'translateX(6px)'} ,{transform:'translateX(0)'}], {duration:500,iterations:1});
-    }
+  function deleteComic(){ if(!confirm('Xác nhận xóa truyện?')) return; const idx = state.comics.findIndex(x=>x.id===state.currentComicId); if(idx===-1) return; const before = state.comics[idx]; state.comics.splice(idx,1); state.currentComicId=null; saveState(); pushAudit('delete:comic',{before}); renderComics(); renderSelected(); }
 
-    // toast
-    function showToast(t){
-      const x = document.createElement('div');
-      x.textContent = t; x.style.position='fixed';x.style.right='18px';x.style.bottom='18px';x.style.padding='10px 12px';x.style.borderRadius='10px';x.style.background='linear-gradient(90deg, rgba(255,107,129,0.12), rgba(255,209,102,0.08))';x.style.backdropFilter='blur(6px)';x.style.color='var(--text)';x.style.zIndex=9999;document.body.appendChild(x);
-      setTimeout(()=>{x.style.opacity='0';x.style.transform='translateY(8px)';},2500);
-      setTimeout(()=>x.remove(),3200);
-    }
+  // Chapters
+  function createChap(){ const c = state.comics.find(x=>x.id===state.currentComicId); if(!c) return alert('Chưa chọn truyện'); const title = document.getElementById('chapTitle').value || ('Chap ' + (c.chapters.length+1)); const chap = {id:uid('chap'), title, images:[]}; c.chapters.push(chap); saveState(); pushAudit('create:chap',{comic:c.id, chap}); renderSelected(); alert('Tạo chap xong. Thêm ảnh vào chap qua input.'); }
+  function deleteChap(){ const c = state.comics.find(x=>x.id===state.currentComicId); if(!c) return; const idx = Number(chapterSelect.value); if(isNaN(idx)) return; if(!confirm('Xóa chap?')) return; const before = c.chapters[idx]; c.chapters.splice(idx,1); state.currentChapIndex = Math.max(0, state.currentChapIndex-1); saveState(); pushAudit('delete:chap',{comic:c.id, before}); renderSelected(); }
 
-    // Confetti (simple)
-    function launchConfetti(count=80){
-      const ctx = confettiCanvas.getContext('2d');
-      const w = confettiCanvas.width = confettiCanvas.offsetWidth;
-      const h = confettiCanvas.height = confettiCanvas.offsetHeight;
-      const pieces = [];
-      for(let i=0;i<count;i++){
-        pieces.push({x:Math.random()*w,y:Math.random()*-h,vy:2+Math.random()*4,ax:0.01*(Math.random()-0.5),size:6+Math.random()*8,rot:Math.random()*360,vr:Math.random()*6-3,color:randomColor()});
-      }
-      let frame=0;
-      function render(){
-        ctx.clearRect(0,0,w,h);
-        for(const p of pieces){
-          p.x += p.ax*frame;
-          p.y += p.vy;
-          p.rot += p.vr;
-          ctx.save();
-          ctx.translate(p.x,p.y);
-          ctx.rotate(p.rot*Math.PI/180);
-          ctx.fillStyle = p.color;
-          ctx.fillRect(-p.size/2,-p.size/2,p.size,p.size*0.6);
-          ctx.restore();
-          if(p.y>h+20){ p.y = -10; p.x = Math.random()*w; }
-        }
-        frame++;
-        if(frame<500) requestAnimationFrame(render);
-        else ctx.clearRect(0,0,w,h);
-      }
-      render();
-    }
-    function randomColor(){
-      const cs = ['#ff6b81','#ffd166','#9bf6ff','#c4f0c9','#ff9f80']; return cs[Math.floor(Math.random()*cs.length)];
-    }
+  // Images add: by URL or file
+  function addImageToCurrent(url){ const c = state.comics.find(x=>x.id===state.currentComicId); if(!c) return; const chap = c.chapters[state.currentChapIndex]; if(!chap) return alert('Chưa chọn chap'); chap.images.push(url); saveState(); pushAudit('add:image',{comic:c.id, chap:chap.id, url}); renderImgList(); showChapter(state.currentChapIndex); }
 
-    // resize confetti
-    window.addEventListener('resize', ()=>{
-      confettiCanvas.width = confettiCanvas.offsetWidth;
-      confettiCanvas.height = confettiCanvas.offsetHeight;
-    });
+  function handleFileToDataUrl(file, cb){ const fr = new FileReader(); fr.onload = ()=> cb(fr.result); fr.readAsDataURL(file); }
 
-    // keyboard: Esc to close modal
-    window.addEventListener('keydown', (e)=>{ if(e.key==='Escape') closeModal(); });
+  function renderImgList(){ const el = document.getElementById('imgList'); el.innerHTML=''; const c = state.comics.find(x=>x.id===state.currentComicId); if(!c) return; const chap = c.chapters[state.currentChapIndex]; if(!chap) return; chap.images.forEach((src,i)=>{ const div = document.createElement('div'); div.style.display='flex'; div.style.alignItems='center'; div.style.gap='8px'; div.style.padding='6px 0'; div.innerHTML = `<img src="${src}" style="width:60px;height:80px;object-fit:cover;border-radius:6px"/><div style="flex:1"><div style=\"font-size:13px\">${src.split('?')[0].slice(0,60)}</div><div class=\"small\">#${i+1}</div></div><div><button data-i="${i}" class=\"btn\">Xóa</button></div>`; el.appendChild(div); div.querySelector('button').addEventListener('click', ()=>{ if(!confirm('Xóa ảnh?')) return; const removed = chap.images.splice(i,1); saveState(); pushAudit('delete:image',{comic:c.id, chap:chap.id, removed}); renderImgList(); showChapter(state.currentChapIndex); }); }); }
 
-    // load saved note
-    try{ const saved = localStorage.getItem('love_note'); if(saved) noteInput.value = saved; }catch(e){}
+  // -------------------- BOOKMARK --------------------
+  function saveBookmark(){ if(!state.currentComicId) return alert('Chưa chọn truyện'); const b = JSON.parse(localStorage.getItem('manga-bookmarks-v1')||'[]'); const entry = {comicId:state.currentComicId, chapIndex:state.currentChapIndex, at:now()}; b.unshift(entry); localStorage.setItem('manga-bookmarks-v1', JSON.stringify(b.slice(0,30))); renderBookmarks(); alert('Đã lưu bookmark'); }
+  function renderBookmarks(){ const node = document.getElementById('bookmarks'); node.innerHTML=''; const b = JSON.parse(localStorage.getItem('manga-bookmarks-v1')||'[]'); b.forEach(it=>{ const c = state.comics.find(x=>x.id===it.comicId); if(!c) return; const el = document.createElement('div'); el.style.padding='6px 0'; el.innerHTML = `<b>${c.title}</b> - ${c.chapIndex !== undefined ? c.chapters[it.chapIndex] ? c.chapters[it.chapIndex].title : '' : ''} <button style="float:right" class="btn">Mở</button>`; el.querySelector('button').addEventListener('click', ()=>{ state.currentComicId = it.comicId; state.currentChapIndex = it.chapIndex || 0; saveState(); renderSelected(); }); node.appendChild(el); }); }
 
+  // -------------------- AUDIT --------------------
+  function renderAudit(){ const node = document.getElementById('auditLogs'); const logs = JSON.parse(localStorage.getItem(AUDIT_KEY)||'[]'); node.innerHTML = logs.map(l=>`<div style="padding:6px;border-bottom:1px solid #eee"><b>${l.action}</b> bởi <i>${l.by}</i> lúc ${l.at}<div style="font-size:13px;color:#444">${JSON.stringify(l.details)}</div></div>`).join(''); }
+
+  // -------------------- EVENTS --------------------
+  document.getElementById('search').addEventListener('input', e=> renderComics(e.target.value));
+  document.getElementById('loginBtn').addEventListener('click', loginPrompt);
+  document.getElementById('logoutBtn').addEventListener('click', ()=>{ logout(); });
+  document.getElementById('newComicBtn').addEventListener('click', createNewComic);
+  document.getElementById('saveComic').addEventListener('click', saveComic);
+  document.getElementById('deleteComic').addEventListener('click', deleteComic);
+  document.getElementById('createChapBtn').addEventListener('click', createChap);
+  document.getElementById('deleteChapBtn').addEventListener('click', deleteChap);
+  document.getElementById('addImgBtn').addEventListener('click', ()=>{
+    const url = document.getElementById('imgUrlInput').value.trim(); const fileEl = document.getElementById('imgFile');
+    if(url){ addImageToCurrent(url); document.getElementById('imgUrlInput').value=''; return; }
+    if(fileEl.files && fileEl.files[0]){ handleFileToDataUrl(fileEl.files[0], dataUrl=>{ addImageToCurrent(dataUrl); fileEl.value=''; }); return; }
+    alert('Dán URL hoặc chọn file ảnh');
+  });
+
+  document.getElementById('bookmarkBtn').addEventListener('click', saveBookmark);
+  document.getElementById('chapterSelect').addEventListener('change', e=>{ state.currentChapIndex = Number(e.target.value); saveState(); showChapter(state.currentChapIndex); });
+  document.getElementById('prevChap').addEventListener('click', ()=>{ const c = state.comics.find(x=>x.id===state.currentComicId); if(!c) return; if(state.currentChapIndex>0){ state.currentChapIndex--; saveState(); showChapter(state.currentChapIndex); chapterSelect.value = state.currentChapIndex; } });
+  document.getElementById('nextChap').addEventListener('click', ()=>{ const c = state.comics.find(x=>x.id===state.currentComicId); if(!c) return; if(state.currentChapIndex < c.chapters.length-1){ state.currentChapIndex++; saveState(); showChapter(state.currentChapIndex); chapterSelect.value = state.currentChapIndex; } });
+  document.getElementById('toggleTheme').addEventListener('click', ()=>{ const t = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark'; if(t==='dark'){ document.documentElement.setAttribute('data-theme','dark'); } else { document.documentElement.removeAttribute('data-theme'); } });
+  document.getElementById('toggleContinuous').addEventListener('click', ()=>{ state.continuous = !state.continuous; saveState(); showChapter(state.currentChapIndex); });
+
+  // keyboard shortcuts
+  document.addEventListener('keydown', e=>{ if(e.key==='ArrowLeft') document.getElementById('prevChap').click(); if(e.key==='ArrowRight') document.getElementById('nextChap').click(); if(e.key.toLowerCase()==='s') saveBookmark(); });
+
+  // init
+  loadState(); renderComics(); renderAuth(); renderAudit(); renderSelected();
+
+  // helpful hint for first-time users
+  if(!localStorage.getItem('seen-manga-demo-msg')){ alert('Demo: dùng tài khoản admin/123 hoặc user/123. Admin có quyền CRUD. Toàn bộ dữ liệu chỉ lưu trên trình duyệt.'); localStorage.setItem('seen-manga-demo-msg','1'); }
   </script>
 </body>
 </html>
